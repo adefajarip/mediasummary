@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evello Media Summary</title>
+  <title>Evello Dynamic Reader Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,21 +39,16 @@
     .floating-toggle { position: absolute; top: 14px; left: 16px; display: none; }
     .sidebar.collapsed ~ .main-area .floating-toggle { display: flex; }
 
-    /* Banner & Panel Kontrol Terkunci */
-    .setup-banner { padding: 12px 16px; background-color: #eef2ff; border-bottom: 1px solid #c7d2fe; display: flex; flex-direction: column; gap: 8px; }
-    .btn-setup { width: 100%; padding: 8px 10px; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2); position: relative; transition: var(--transition); }
-    .btn-setup:hover { background-color: var(--primary-hover); }
-
-    .control-panel { padding: 14px 16px; background-color: #f8fafc; border-bottom: 1px solid var(--border-color); }
+    /* Panel Kontrol Utama */
+    .control-panel { padding: 16px; background-color: #f8fafc; border-bottom: 1px solid var(--border-color); }
     .btn-action { width: 100%; padding: 10px 12px; background-color: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: var(--transition); position: relative; }
     .btn-action:hover { border-color: var(--primary); color: var(--primary); }
+    .lock-icon { position: absolute; right: 10px; opacity: 0.7; color: #94a3b8; }
 
-    .lock-icon { position: absolute; right: 10px; opacity: 0.7; }
-    .btn-setup .lock-icon { color: #ffffff; }
-    .btn-action .lock-icon { color: #94a3b8; }
-
-    .folder-status { font-size: 0.7rem; color: #10b981; display: flex; align-items: center; gap: 4px; justify-content: center; font-weight: 500; margin-top: 6px; text-align: center; word-break: break-all; }
+    /* Status Cloud Sync */
+    .folder-status { font-size: 0.7rem; color: #10b981; display: flex; align-items: center; gap: 4px; justify-content: center; font-weight: 500; margin-top: 8px; text-align: center; word-break: break-all; }
     .folder-status.inactive { color: var(--text-muted); }
+    .folder-status.error { color: #ef4444; }
 
     /* Status Pemuatan Env */
     .env-alert { font-size: 0.7rem; padding: 6px 10px; margin: 0 16px 8px 16px; border-radius: 6px; display: none; text-align: center; font-weight: 500; }
@@ -83,23 +78,19 @@
     .viewer-container { flex: 1; width: 100%; height: 100%; position: relative; padding: 16px; }
     .content-iframe { width: 100%; height: 100%; border: none; border-radius: var(--radius); background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
 
-    /* Pop-up Modal Umum */
+    /* Pop-up Modal Otorisasi Sandi */
     .modal-container { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
     .modal-container.show { opacity: 1; pointer-events: auto; }
-    .modal-box { background-color: #ffffff; width: 100%; max-width: 400px; padding: 24px; border-radius: var(--radius); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); transform: scale(0.95); transition: transform 0.2s ease; max-height: 90vh; overflow-y: auto; }
+    .modal-box { background-color: #ffffff; width: 100%; max-width: 380px; padding: 24px; border-radius: var(--radius); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); transform: scale(0.95); transition: transform 0.2s ease; }
     .modal-container.show .modal-box { transform: scale(1); }
 
     .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
     .modal-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
-    
-    .form-group { margin-bottom: 12px; text-align: left; }
-    .form-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
-    .modal-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; outline: none; transition: var(--transition); }
+    .modal-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; outline: none; transition: var(--transition); margin-bottom: 12px; }
     .modal-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
-    
     .modal-error { font-size: 0.75rem; color: #ef4444; margin-bottom: 12px; display: none; }
 
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
     .btn-modal { padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; }
     .btn-cancel { background-color: #f1f5f9; color: var(--text-muted); }
     .btn-cancel:hover { background-color: #e2e8f0; }
@@ -128,36 +119,23 @@
         </button>
       </div>
 
-      <div class="setup-banner" id="setup-banner">
-        <p style="font-size:0.7rem; color:var(--text-muted); line-height:1.3;">Sinkronisasi GitHub/Vercel belum aktif. Atur parameter target repositori:</p>
-        <button class="btn-setup" onclick="triggerSecureAction('config')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2"/></svg>
-          Setup Sync Repositori
-          <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </button>
-      </div>
-
       <div class="control-panel">
-        <button class="btn-action upload" onclick="triggerSecureAction('upload')">
+        <button class="btn-action upload" onclick="triggerSecureUpload()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Upload HTML Manual
-          <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <svg class="lock-icon" id="lock-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </button>
         <input type="file" id="file-input" accept=".html,.htm" multiple style="display:none;" onchange="handleManualUpload(event)" />
 
         <div class="folder-status inactive" id="folder-status-indicator">
-          <span>●</span> <span id="folder-status-text">Cloud Sync siaga...</span>
+          <span>●</span> <span id="folder-status-text">Memproses file .env...</span>
         </div>
-        
-        <button id="btn-edit-config" onclick="triggerSecureAction('config')" style="display:none; background:none; border:none; color:var(--primary); font-size:0.65rem; font-weight:600; cursor:pointer; margin:4px auto 0 auto; text-decoration:underline;">
-          Ubah Konfigurasi Target
-        </button>
       </div>
 
       <div id="env-status-alert" class="env-alert"></div>
 
       <div class="file-list-container">
-        <div class="section-title">
+        <div class="section-title" style="margin-top:12px;">
           <span>Arsip Tersimpan</span>
           <span id="file-count" style="font-size:0.65rem; background:#e2e8f0; padding:2px 6px; border-radius:10px;">0</span>
         </div>
@@ -174,7 +152,7 @@
         <div class="empty-state" id="empty-state">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom:12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           <h3 style="font-size:1.05rem; color:var(--text-main);">Belum Ada Laporan Terbaca</h3>
-          <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; max-width:280px; margin-top:4px;">Laporan akan otomatis disinkronkan dari repositori cloud atau silakan gunakan fasilitas upload manual.</p>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; max-width:280px; margin-top:4px;">Aplikasi sedang menyinkronkan file dari repositori secara otomatis atau gunakan fasilitas upload manual di sidebar.</p>
         </div>
         <iframe class="content-iframe" id="content-iframe" style="display: none;"></iframe>
       </div>
@@ -185,9 +163,9 @@
     <div class="modal-box">
       <div class="modal-title">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Autentikasi Keamanan
+        Autentikasi Upload
       </div>
-      <p class="modal-desc">Akses modifikasi target sinkronisasi atau penambahan file manual memerlukan otorisasi sandi.</p>
+      <p class="modal-desc">Fasilitas penambahan arsip HTML manual memerlukan verifikasi sandi.</p>
       
       <input type="password" id="password-input" class="modal-input" placeholder="Masukkan sandi otorisasi..." onkeydown="if(event.key === 'Enter') verifySecureAccess()" />
       <div class="modal-error" id="modal-error">Sandi salah! Silakan coba lagi.</div>
@@ -199,46 +177,14 @@
     </div>
   </div>
 
-  <div class="modal-container" id="config-modal">
-    <div class="modal-box">
-      <div class="modal-title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/></svg>
-        Setup Repositori Sync
-      </div>
-      <p class="modal-desc">Secara default, parameter diambil dari file <b>.env</b>. Anda bisa menimpanya (*override*) di sini.</p>
-      
-      <div class="form-group">
-        <label class="form-label">Pemilik / Akun GitHub (Owner)</label>
-        <input type="text" id="cfg-owner" class="modal-input" placeholder="Contoh: username" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nama Repositori (Repo)</label>
-        <input type="text" id="cfg-repo" class="modal-input" placeholder="Contoh: aplikasi-dashboard" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Path Folder Tujuan (Opsional)</label>
-        <input type="text" id="cfg-folder" class="modal-input" placeholder="Contoh: reports (kosongkan jika root)" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Personal Access Token (Opsional)</label>
-        <input type="password" id="cfg-token" class="modal-input" placeholder="Diperlukan jika repositori bersifat Private" />
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-modal btn-cancel" onclick="closeConfigModal()">Tutup</button>
-        <button class="btn-modal btn-submit" onclick="saveRepositoryConfig()">Simpan Override</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     /* =========================================================================
-       STRATEGI KEAMANAN MUTLAK: NATIVE SHA-256 & FULL .ENV INTEGRATION
+       STRATEGI OTOMATISASI PENUH: PEMBACAAN LANGSUNG .ENV & GITHUB SYNC
        ========================================================================= */
     const backupByteSequence = [83, 101, 109, 97, 110, 103, 97, 116, 69, 118, 101, 108, 108, 111];
     let TARGET_SECURE_HASH = "";
     
-    // Objek Penyimpanan Nilai Murni File .env
+    // Penyimpanan Objek Parameter .env
     let envConfig = {
       GITHUB_OWNER: "",
       GITHUB_REPO: "",
@@ -251,19 +197,17 @@
     const STORE_NAME = "html_reports";
     
     let db;
-    let isAccessUnlocked = false; 
-    let pendingAction = null;     
+    let isUploadUnlocked = false; 
     let autoSyncInterval = null;
     let storedFiles = new Map();
     let activeFileName = localStorage.getItem('evello_last_active') || null;
 
     // Referensi DOM
     const sidebar = document.getElementById('sidebar');
-    const setupBanner = document.getElementById('setup-banner');
     const authModal = document.getElementById('auth-modal');
-    const configModal = document.getElementById('config-modal');
     const passwordInput = document.getElementById('password-input');
     const modalError = document.getElementById('modal-error');
+    const lockIcon = document.getElementById('lock-icon');
     const fileInput = document.getElementById('file-input');
     const menuList = document.getElementById('menu-list');
     const fileCountLabel = document.getElementById('file-count');
@@ -271,14 +215,7 @@
     const emptyState = document.getElementById('empty-state');
     const folderStatusIndicator = document.getElementById('folder-status-indicator');
     const folderStatusText = document.getElementById('folder-status-text');
-    const btnEditConfig = document.getElementById('btn-edit-config');
     const envStatusAlert = document.getElementById('env-status-alert');
-
-    // Input Form Target Repositori
-    const cfgOwner = document.getElementById('cfg-owner');
-    const cfgRepo = document.getElementById('cfg-repo');
-    const cfgFolder = document.getElementById('cfg-folder');
-    const cfgToken = document.getElementById('cfg-token');
 
     /* ==========================================
        FUNGSI KRIPTOGRAFI SHA-256 NATIVE
@@ -291,56 +228,73 @@
     }
 
     /* ==========================================
-       PEMBACA & EKSTRAKTOR FILE .env
+       1. PEMBACA & PARSER LANGSUNG FILE .ENV
        ========================================== */
-    async function initializeEnvVariables() {
-      // Pasang sandi dasar
+    async function executeEnvReader() {
+      // Sandi fallback bawaan
       const secretBackup = String.fromCharCode(...backupByteSequence);
       TARGET_SECURE_HASH = await computeSHA256(secretBackup);
 
       try {
         const response = await fetch('.env');
-        if (response.ok) {
-          const envText = await response.text();
-          const lines = envText.split('\n');
-          
-          let envLoadedCount = 0;
-          for (let line of lines) {
-            line = line.trim();
-            if (line.startsWith('EVELLO_API_KEY=')) {
-              let val = line.substring('EVELLO_API_KEY='.length).trim().replace(/^"|"$/g, '');
-              if (val) TARGET_SECURE_HASH = await computeSHA256(val);
-            } else if (line.startsWith('GITHUB_OWNER=')) {
-              envConfig.GITHUB_OWNER = line.substring('GITHUB_OWNER='.length).trim().replace(/^"|"$/g, '');
-              if (envConfig.GITHUB_OWNER) envLoadedCount++;
-            } else if (line.startsWith('GITHUB_REPO=')) {
-              envConfig.GITHUB_REPO = line.substring('GITHUB_REPO='.length).trim().replace(/^"|"$/g, '');
-              if (envConfig.GITHUB_REPO) envLoadedCount++;
-            } else if (line.startsWith('GITHUB_FOLDER=')) {
-              envConfig.GITHUB_FOLDER = line.substring('GITHUB_FOLDER='.length).trim().replace(/^"|"$/g, '');
-            } else if (line.startsWith('GITHUB_TOKEN=')) {
-              envConfig.GITHUB_TOKEN = line.substring('GITHUB_TOKEN='.length).trim().replace(/^"|"$/g, '');
-            }
-          }
-          
-          if (envLoadedCount > 0) {
-            envStatusAlert.textContent = "✔ Parameter sinkronisasi .env aktif";
-            envStatusAlert.className = "env-alert success";
-            setTimeout(() => envStatusAlert.style.display = 'none', 4000);
+        if (!response.ok) throw new Error("File .env tidak ditemukan");
+        
+        const envText = await response.text();
+        // Mendukung pemisahan baris Windows (\r\n) maupun Unix (\n)
+        const lines = envText.split(/\r?\n/);
+        
+        let validParamsFound = false;
+
+        for (let line of lines) {
+          line = line.trim();
+          // Lewati baris kosong atau komentar
+          if (!line || line.startsWith('#')) continue;
+
+          // Pemisahan pasangan kunci dan nilai secara akurat
+          const separatorIdx = line.indexOf('=');
+          if (separatorIdx === -1) continue;
+
+          const key = line.substring(0, separatorIdx).trim();
+          let value = line.substring(separatorIdx + 1).trim();
+          // Hilangkan tanda kutip ganda atau tunggal jika ada
+          value = value.replace(/^["']|["']$/g, '');
+
+          if (key === 'EVELLO_API_KEY' && value) {
+            TARGET_SECURE_HASH = await computeSHA256(value);
+          } else if (key === 'GITHUB_OWNER') {
+            envConfig.GITHUB_OWNER = value;
+            if (value) validParamsFound = true;
+          } else if (key === 'GITHUB_REPO') {
+            envConfig.GITHUB_REPO = value;
+            if (value) validParamsFound = true;
+          } else if (key === 'GITHUB_FOLDER') {
+            envConfig.GITHUB_FOLDER = value;
+          } else if (key === 'GITHUB_TOKEN') {
+            envConfig.GITHUB_TOKEN = value;
           }
         }
-      } catch (e) {
-        // Lingkungan Vercel CDN memblokir URL .env, sehingga variabel harus disematkan di env server
+
+        if (validParamsFound) {
+          envStatusAlert.textContent = "✔ Parameter .env berhasil dimuat";
+          envStatusAlert.className = "env-alert success";
+          setTimeout(() => envStatusAlert.style.display = 'none', 3000);
+        }
+
+      } catch (err) {
+        // Tampilkan galat apabila file .env diakses tanpa web server
+        envStatusAlert.innerHTML = "⚠️ Gagal membaca file <b>.env</b><br><span style='font-size:0.65rem;'>Pastikan web dibuka melalui Web Server lokal</span>";
+        envStatusAlert.className = "env-alert error";
       }
 
-      // Lanjutkan inisialisasi basis data
+      // Begitu pembacaan selesai, lanjutkan membuka penyimpanan database
       initDatabase();
     }
 
-    window.addEventListener('DOMContentLoaded', () => initializeEnvVariables());
+    // Pemicu rantai eksekusi otomatis saat halaman web dimuat
+    window.addEventListener('DOMContentLoaded', () => executeEnvReader());
 
     /* ==========================================
-       SISTEM DATABASE INDEXEDDB PERSISTEN
+       2. SISTEM PENYIMPANAN INDEXEDDB PERSISTEN
        ========================================== */
     function initDatabase() {
       const request = indexedDB.open(DB_NAME, 1);
@@ -363,6 +317,7 @@
       const request = store.getAll();
 
       request.onsuccess = () => {
+        // Muat menu riwayat arsip yang telah dibaca sebelumnya
         request.result.forEach(item => storedFiles.set(item.fileName, item.content));
         refreshSidebarMenu();
 
@@ -372,8 +327,8 @@
           openReportPreview(storedFiles.keys().next().value);
         }
 
-        // Jalankan evaluasi parameter sinkronisasi
-        evaluateAndStartSync();
+        // Jalankan seketika proses penarikan arsip GitHub secara otomatis
+        autoSyncGitHubRepository();
       };
     }
 
@@ -417,13 +372,12 @@
     function toggleSidebar() { sidebar.classList.toggle('collapsed'); }
 
     /* ==========================================
-       LOGIKA PINTU KEAMANAN (SMART GATE)
+       LOGIKA PINTU KEAMANAN UPLOAD MANUAL
        ========================================== */
-    function triggerSecureAction(actionType) {
-      if (isAccessUnlocked) {
-        executeAction(actionType);
+    function triggerSecureUpload() {
+      if (isUploadUnlocked) {
+        fileInput.click();
       } else {
-        pendingAction = actionType;
         passwordInput.value = '';
         modalError.style.display = 'none';
         authModal.classList.add('show');
@@ -431,171 +385,131 @@
       }
     }
 
-    function closeAuthModal() {
-      authModal.classList.remove('show');
-      pendingAction = null;
-    }
-
-    function executeAction(type) {
-      if (type === 'config') openConfigRepositoryModal();
-      else if (type === 'upload') fileInput.click();
-    }
+    function closeAuthModal() { authModal.classList.remove('show'); }
 
     async function verifySecureAccess() {
       const userInput = passwordInput.value;
       const hashedInput = await computeSHA256(userInput);
 
       if (hashedInput === TARGET_SECURE_HASH && TARGET_SECURE_HASH !== "") {
-        isAccessUnlocked = true;
+        isUploadUnlocked = true;
         authModal.classList.remove('show');
-        document.querySelectorAll('.lock-icon').forEach(icon => icon.style.display = 'none');
-        
-        if (pendingAction) {
-          const actionToRun = pendingAction;
-          pendingAction = null;
-          setTimeout(() => executeAction(actionToRun), 150);
-        }
+        if (lockIcon) lockIcon.style.display = 'none';
+        setTimeout(() => fileInput.click(), 150);
       } else {
         modalError.style.display = 'block';
         passwordInput.focus();
       }
     }
 
-    /* ====================================================
-       SISTEM SINKRONISASI OTOMATIS BERBASIS .ENV & API
-       ==================================================== */
-    // Menarik prioritas variabel: LocalStorage (Override) > .env File
-    function getActiveSyncParams() {
-      return {
-        owner: localStorage.getItem('evello_gh_owner') || envConfig.GITHUB_OWNER,
-        repo: localStorage.getItem('evello_gh_repo') || envConfig.GITHUB_REPO,
-        folder: localStorage.getItem('evello_gh_folder') || envConfig.GITHUB_FOLDER || '',
-        token: localStorage.getItem('evello_gh_token') || envConfig.GITHUB_TOKEN || ''
-      };
-    }
-
-    function evaluateAndStartSync() {
-      const params = getActiveSyncParams();
-
-      if (params.owner && params.repo) {
-        // Parameter tersedia, sembunyikan banner manual dan jalankan live-sync
-        setupBanner.style.display = 'none';
-        btnEditConfig.style.display = 'block'; // Tampilkan link ubah config
-        
-        let displayPath = params.folder ? `${params.repo}/${params.folder}` : params.repo;
-        folderStatusText.textContent = `Cloud-Sync aktif: ${displayPath}`;
-        folderStatusIndicator.className = 'folder-status';
-
-        scanRemoteRepositoryFiles();
-        if (autoSyncInterval) clearInterval(autoSyncInterval);
-        autoSyncInterval = setInterval(() => scanRemoteRepositoryFilesSilently(), 4000);
-      } else {
-        // Kosong baik di .env maupun memori lokal, minta input manual
-        folderStatusText.textContent = "Cloud Sync belum dikonfigurasi";
-        folderStatusIndicator.className = 'folder-status inactive';
-        btnEditConfig.style.display = 'none';
-        setupBanner.style.display = 'flex';
-      }
-    }
-
-    function openConfigRepositoryModal() {
-      const params = getActiveSyncParams();
-      cfgOwner.value = params.owner || '';
-      cfgRepo.value = params.repo || '';
-      cfgFolder.value = params.folder || '';
-      cfgToken.value = params.token || '';
-      configModal.classList.add('show');
-    }
-
-    function closeConfigModal() { configModal.classList.remove('show'); }
-
-    function saveRepositoryConfig() {
-      const owner = cfgOwner.value.trim();
-      const repo = cfgRepo.value.trim();
-      const folder = cfgFolder.value.trim().replace(/^\/|\/$/g, '');
-      const token = cfgToken.value.trim();
-
-      // Jika form dibersihkan, hapus override lokal agar kembali menggunakan nilai asli .env
-      if (!owner && !repo) {
-        localStorage.removeItem('evello_gh_owner');
-        localStorage.removeItem('evello_gh_repo');
-        localStorage.removeItem('evello_gh_folder');
-        localStorage.removeItem('evello_gh_token');
-        closeConfigModal();
-        evaluateAndStartSync();
+    /* ===================================================================
+       3. ENGINE PENARIK OTOMATIS GITHUB API (DUAL FETCHING STRATEGY)
+       =================================================================== */
+    function autoSyncGitHubRepository() {
+      if (!envConfig.GITHUB_OWNER || !envConfig.GITHUB_REPO) {
+        folderStatusText.textContent = "Parameter Akun/Repo di .env kosong";
+        folderStatusIndicator.className = 'folder-status error';
         return;
       }
 
-      if (!owner || !repo) {
-        alert("Atribut Akun Pemilik (Owner) dan Nama Repositori wajib diisi.");
-        return;
-      }
+      // Pembuatan string jalur folder yang tepat untuk menghindari dobel garis miring
+      const cleanFolder = envConfig.GITHUB_FOLDER ? envConfig.GITHUB_FOLDER.replace(/^\/|\/$/g, '') : '';
+      const pathSuffix = cleanFolder ? `/${cleanFolder}` : '';
+      const displayPath = cleanFolder ? `${envConfig.GITHUB_REPO}/${cleanFolder}` : envConfig.GITHUB_REPO;
 
-      localStorage.setItem('evello_gh_owner', owner);
-      localStorage.setItem('evello_gh_repo', repo);
-      localStorage.setItem('evello_gh_folder', folder);
-      if (token) localStorage.setItem('evello_gh_token', token);
-      else localStorage.removeItem('evello_gh_token');
+      folderStatusText.textContent = `Cloud-Sync: ${displayPath} (Aktif)`;
+      folderStatusIndicator.className = 'folder-status';
 
-      closeConfigModal();
-      evaluateAndStartSync();
+      // Eksekusi pemindaian perdana seketika
+      fetchFilesFromGitHub(pathSuffix);
+
+      // Pengecekan kontinyu secara senyap di latar belakang setiap 5 detik
+      if (autoSyncInterval) clearInterval(autoSyncInterval);
+      autoSyncInterval = setInterval(() => fetchFilesFromGitHub(pathSuffix), 5000);
     }
 
-    // Melakukan Panggilan ke Jalur GitHub API untuk Melakukan Ekstraksi Arsip
-    async function scanRemoteRepositoryFiles() {
-      const params = getActiveSyncParams();
-      if (!params.owner || !params.repo) return;
-
-      const apiUrl = `https://api.github.com/repos/${params.owner}/${params.repo}/contents/${params.folder}`;
+    async function fetchFilesFromGitHub(pathSuffix) {
+      const apiUrl = `https://api.github.com/repos/${envConfig.GITHUB_OWNER}/${envConfig.GITHUB_REPO}/contents${pathSuffix}`;
+      
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
-      if (params.token) headers['Authorization'] = `token ${params.token}`;
+      if (envConfig.GITHUB_TOKEN) {
+        headers['Authorization'] = `token ${envConfig.GITHUB_TOKEN}`;
+      }
 
       try {
         const response = await fetch(apiUrl, { headers });
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        if (!response.ok) return; // Keluar senyap jika limit API tercapai atau path tidak ada
         
         const contents = await response.json();
         if (!Array.isArray(contents)) return;
 
-        let hasNewUpdates = false;
+        let hasNewFilesAdded = false;
 
         for (let item of contents) {
+          // Hanya muat item spesifik bertipe file, format HTML/HTM, dan bukan index.html
           if (item.type === 'file' && 
              (item.name.endsWith('.html') || item.name.endsWith('.htm')) && 
              (item.name.toLowerCase() !== 'index.html')) {
             
+            // Apabila file belum tersimpan di dalam menu/memori, unduh isinya
             if (!storedFiles.has(item.name)) {
               try {
-                const rawUrl = item.download_url;
-                if (rawUrl) {
-                  const contentResp = await fetch(rawUrl);
-                  const htmlString = await contentResp.text();
-                  saveReportToStorage(item.name, htmlString);
-                  hasNewUpdates = true;
+                const htmlContent = await fetchRobustRawContent(item);
+                if (htmlContent) {
+                  saveReportToStorage(item.name, htmlContent);
+                  hasNewFilesAdded = true;
                 }
               } catch (fileErr) {
-                console.error("Gagal mengunduh isi dokumen:", item.name);
+                console.error("Gagal mengunduh berkas:", item.name);
               }
             }
           }
         }
 
-        if (hasNewUpdates && !activeFileName && storedFiles.size > 0) {
+        // Tampilkan laporan secara instan jika ini adalah penarikan arsip pertama
+        if (hasNewFilesAdded && !activeFileName && storedFiles.size > 0) {
           openReportPreview(storedFiles.keys().next().value);
         }
 
-        let displayPath = params.folder ? `${params.repo}/${params.folder}` : params.repo;
-        folderStatusText.textContent = `Cloud-Sync aktif: ${displayPath}`;
+        // Status penanda sukses
+        const cleanFolder = envConfig.GITHUB_FOLDER ? envConfig.GITHUB_FOLDER.replace(/^\/|\/$/g, '') : '';
+        const displayPath = cleanFolder ? `${envConfig.GITHUB_REPO}/${cleanFolder}` : envConfig.GITHUB_REPO;
+        folderStatusText.textContent = `Cloud-Sync: ${displayPath} (Aktif)`;
         folderStatusIndicator.className = 'folder-status';
 
       } catch (err) {
-        folderStatusText.textContent = "Sesi Terjeda (Rate Limit API / Akses)";
-        folderStatusIndicator.className = 'folder-status inactive';
+        // Tetap senyap saat koneksi terputus sesaat
       }
     }
 
-    function scanRemoteRepositoryFilesSilently() {
-      scanRemoteRepositoryFiles();
+    // Jalur Pengunduhan Isi Mentah Ganda yang Tangguh (Mendukung Public & Private Repos)
+    async function fetchRobustRawContent(item) {
+      // Opsi 1: Prioritaskan pengunduhan langsung via URL Download mentah
+      if (item.download_url) {
+        try {
+          const directHeaders = {};
+          // Sertakan header otorisasi jika URL mengarah ke domain raw GitHub internal
+          if (envConfig.GITHUB_TOKEN && item.download_url.includes('raw.githubusercontent.com')) {
+            directHeaders['Authorization'] = `token ${envConfig.GITHUB_TOKEN}`;
+          }
+          const res = await fetch(item.download_url, { headers: directHeaders });
+          if (res.ok) return await res.text();
+        } catch (e) {
+          // Jatuh bebas ke opsi 2 jika terblokir CORS
+        }
+      }
+
+      // Opsi 2: Jalur API Murni dengan Header Media Type Raw (Dijamin andal untuk Private Repo)
+      if (item.url) {
+        const apiHeaders = { 'Accept': 'application/vnd.github.v3.raw' };
+        if (envConfig.GITHUB_TOKEN) {
+          apiHeaders['Authorization'] = `token ${envConfig.GITHUB_TOKEN}`;
+        }
+        const apiRes = await fetch(item.url, { headers: apiHeaders });
+        if (apiRes.ok) return await apiRes.text();
+      }
+
+      throw new Error("Kedua jalur penarikan berkas gagal memuat respons.");
     }
 
     /* ==========================================
