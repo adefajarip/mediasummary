@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Evello Dynamic Reader Dashboard</title>
+  
+  <meta property="og:title" content="Evello Media Summary">
+  <meta property="og:site_name" content="Evello Dashboard Reader">
+  <meta property="og:description" id="meta-og-desc" content="Laporan ringkasan analitik dan intelijen media Evello. Menampilkan arsip pembaruan secara otomatis.">
+  <meta name="description" id="meta-desc" content="Laporan ringkasan analitik dan intelijen media Evello. Menampilkan arsip pembaruan secara otomatis.">
+  <meta property="og:url" content="https://mediasummary.vercel.app/">
+  <meta property="og:type" content="website">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -45,10 +53,12 @@
     .btn-action:hover { border-color: var(--primary); color: var(--primary); }
     .lock-icon { position: absolute; right: 10px; opacity: 0.7; color: #94a3b8; }
 
-    /* Status Cloud Sync */
+    /* Status Cloud Sync & Waktu Dinamis */
     .folder-status { font-size: 0.7rem; color: #10b981; display: flex; align-items: center; gap: 4px; justify-content: center; font-weight: 500; margin-top: 8px; text-align: center; word-break: break-all; }
     .folder-status.inactive { color: var(--text-muted); }
     .folder-status.error { color: #ef4444; }
+    
+    .live-datetime-badge { font-size: 0.65rem; background-color: #eef2ff; color: var(--primary); padding: 4px 8px; border-radius: 6px; text-align: center; font-weight: 600; margin-top: 6px; border: 1px solid #e0e7ff; }
 
     /* Daftar Arsip / Menu Laporan */
     .file-list-container { flex: 1; overflow-y: auto; padding: 0 16px 16px 16px; }
@@ -63,6 +73,7 @@
     .file-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); }
     .file-item.active .file-icon { color: var(--primary); }
     .file-name { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+    .file-time-hint { font-size: 0.65rem; color: var(--text-muted); display: block; }
 
     .btn-delete { background: none; border: none; color: #cbd5e1; cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
     .file-item:hover .btn-delete { color: #94a3b8; }
@@ -92,7 +103,7 @@
     .btn-submit { background-color: var(--primary); color: white; }
     .btn-submit:hover { background-color: var(--primary-hover); }
 
-    /* Custom Scrollbar & Empty State */
+    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -123,7 +134,11 @@
         <input type="file" id="file-input" accept=".html,.htm" multiple style="display:none;" onchange="handleManualUpload(event)" />
 
         <div class="folder-status" id="folder-status-indicator">
-          <span>●</span> <span id="folder-status-text">Menghubungkan ke GitHub API...</span>
+          <span>●</span> <span id="folder-status-text">Memuat GitHub API...</span>
+        </div>
+        
+        <div class="live-datetime-badge" id="live-time-badge" style="display:none;">
+          Arsip Mutakhir: <span id="latest-time-str">-</span>
         </div>
       </div>
 
@@ -145,7 +160,7 @@
         <div class="empty-state" id="empty-state">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" style="margin-bottom:12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           <h3 style="font-size:1.05rem; color:var(--text-main);">Belum Ada Laporan Terbaca</h3>
-          <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; max-width:280px; margin-top:4px;">Aplikasi sedang memuat file secara dinamis dari repositori Vercel/GitHub atau gunakan fasilitas upload manual di sidebar.</p>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; max-width:280px; margin-top:4px;">Aplikasi sedang menyinkronkan file stempel waktu (*datetime*) terbaru secara otomatis di latar belakang.</p>
         </div>
         <iframe class="content-iframe" id="content-iframe" style="display: none;"></iframe>
       </div>
@@ -172,23 +187,15 @@
 
   <script>
     /* =========================================================================
-       OPTIMASASI VERCEL CDN: KONFIGURASI STATIS TERINTEGRASI
-       =========================================================================
-       Karena Vercel CDN memblokir URL pembacaan file .env dari sisi browser,
-       kredensial repositori disuntikkan secara terpadu di bawah ini.
-       
-       Kata sandi otorisasi tetap aman mutlak dari Inspect Element karena
-       hanya disimpan dalam bentuk Pre-Computed Hash SHA-256 matematis.
+       KEAMANAN SANDI & KONFIGURASI TARGET REPOSITORI VERCEL
        ========================================================================= */
-    
-    // Hash mutlak untuk kata sandi rahasia: "SemangatEvello"
     const TARGET_SECURE_HASH = "8f37077a41ec4301e7cd1ab9ef7f9e801b702ec247b9de8b71d47dfb2413a968";
     
-    // Objek Parameter Repositori Vercel / GitHub Anda
+    // Parameter Repositori Vercel / GitHub
     const envConfig = {
       GITHUB_OWNER: "adefajarip",
       GITHUB_REPO: "mediasummary",
-      GITHUB_FOLDER: "", // Kosong berarti membaca root repo tempat file HTML diunggah
+      GITHUB_FOLDER: "", 
       GITHUB_TOKEN: "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"
     };
     
@@ -199,6 +206,8 @@
     let db;
     let isUploadUnlocked = false; 
     let autoSyncInterval = null;
+    
+    // Penyimpanan Berkas: { content: string, timestamp: number, formattedTime: string }
     let storedFiles = new Map();
     let activeFileName = localStorage.getItem('evello_last_active') || null;
 
@@ -215,6 +224,12 @@
     const emptyState = document.getElementById('empty-state');
     const folderStatusIndicator = document.getElementById('folder-status-indicator');
     const folderStatusText = document.getElementById('folder-status-text');
+    
+    // Referensi Penanda Stempel Waktu & Meta Dinamis
+    const liveTimeBadge = document.getElementById('live-time-badge');
+    const latestTimeStr = document.getElementById('latest-time-str');
+    const metaOgDesc = document.getElementById('meta-og-desc');
+    const metaDesc = document.getElementById('meta-desc');
 
     /* ==========================================
        FUNGSI KRIPTOGRAFI SHA-256 NATIVE
@@ -226,7 +241,50 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // Pemicu inisialisasi basis data seketika saat web diakses
+    // Ekstraktor Pintar Stempel Waktu (RegEx Parsing) dari Pola Penamaan Evello
+    function extractFileDateTime(fileName) {
+      // Pola: Media_Summary_YYYYMMDD_HHMMSS.html
+      const regex = /(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/;
+      const match = fileName.match(regex);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // Indeks bulan JavaScript dimulai dari 0
+        const day = parseInt(match[3], 10);
+        const hour = parseInt(match[4], 10);
+        const minute = parseInt(match[5], 10);
+        const second = parseInt(match[6], 10);
+        return new Date(year, month, day, hour, minute, second).getTime();
+      }
+      // Nilai fallback apabila format nama berkas diubah secara manual
+      return Date.now();
+    }
+
+    // Formatter Waktu Lokal Bahasa Indonesia
+    function formatIndonesianDateTime(timestamp) {
+      const dateObj = new Date(timestamp);
+      const options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+      return dateObj.toLocaleDateString('id-ID', options);
+    }
+
+    // Penyuntik/Pengubah Dinamis Tag <head> dan Elemen UI
+    function injectDynamicMetaAndUI(latestFileObj) {
+      if (!latestFileObj) return;
+      
+      const timeString = latestFileObj.formattedTime;
+      const dynamicDescription = `Laporan ringkasan analitik dan intelijen media Evello terkini. Diperbarui secara otomatis pada: ${timeString}.`;
+
+      // Memperbarui atribut 'content' pada tag meta di struktur <head> secara langsung
+      if (metaOgDesc) metaOgDesc.setAttribute('content', dynamicDescription);
+      if (metaDesc) metaDesc.setAttribute('content', dynamicDescription);
+
+      // Menampilkan dan memperbarui teks lencana informasi mutakhir di antarmuka pengguna
+      if (liveTimeBadge && latestTimeStr) {
+        liveTimeBadge.style.display = 'block';
+        latestTimeStr.textContent = timeString;
+      }
+    }
+
+    // Inisialisasi basis data seketika saat peramban diakses
     window.addEventListener('DOMContentLoaded', () => initDatabase());
 
     /* ==========================================
@@ -253,28 +311,34 @@
       const request = store.getAll();
 
       request.onsuccess = () => {
-        request.result.forEach(item => storedFiles.set(item.fileName, item.content));
+        request.result.forEach(item => {
+          const ts = item.timestamp || extractFileDateTime(item.fileName);
+          storedFiles.set(item.fileName, {
+            content: item.content,
+            timestamp: ts,
+            formattedTime: formatIndonesianDateTime(ts)
+          });
+        });
+        
         refreshSidebarMenu();
-
-        if (activeFileName && storedFiles.has(activeFileName)) {
-          openReportPreview(activeFileName);
-        } else if (storedFiles.size > 0) {
-          openReportPreview(storedFiles.keys().next().value);
-        }
-
-        // Lewati bacaan env, langsung lakukan sinkronisasi API GitHub/Vercel
         autoSyncGitHubRepository();
       };
     }
 
     function saveReportToStorage(fileName, contentText) {
-      storedFiles.set(fileName, contentText);
+      const ts = extractFileDateTime(fileName);
+      storedFiles.set(fileName, {
+        content: contentText,
+        timestamp: ts,
+        formattedTime: formatIndonesianDateTime(ts)
+      });
+      
       refreshSidebarMenu();
 
       if (db) {
         const transaction = db.transaction(STORE_NAME, "readwrite");
         const store = transaction.objectStore(STORE_NAME);
-        store.put({ fileName: fileName, content: contentText, timestamp: Date.now() });
+        store.put({ fileName: fileName, content: contentText, timestamp: ts });
       }
     }
 
@@ -290,13 +354,16 @@
       }
 
       if (activeFileName === fileName) {
-        if (storedFiles.size > 0) {
-          openReportPreview(storedFiles.keys().next().value);
+        // Apabila arsip yang sedang terbuka dihapus, alihkan ke arsip mutakhir berikutnya
+        const sortedList = getSortedFilesList();
+        if (sortedList.length > 0) {
+          openReportPreview(sortedList[0].fileName);
         } else {
           activeFileName = null;
           localStorage.removeItem('evello_last_active');
           emptyState.style.display = 'flex';
           iframeViewer.style.display = 'none';
+          if (liveTimeBadge) liveTimeBadge.style.display = 'none';
         }
       }
     }
@@ -338,7 +405,7 @@
     }
 
     /* ===================================================================
-       ENGINE PENARIK OTOMATIS GITHUB API (STATIC VERCEL ADAPTED)
+       SINKRONISASI API GITHUB & OTOMATISASI PENANGANAN DATA
        =================================================================== */
     function autoSyncGitHubRepository() {
       const cleanFolder = envConfig.GITHUB_FOLDER ? envConfig.GITHUB_FOLDER.replace(/^\/|\/$/g, '') : '';
@@ -350,13 +417,13 @@
 
       fetchFilesFromGitHub(pathSuffix);
 
-      // Pengecekan kontinyu pembaruan Vercel/GitHub secara senyap setiap 5 detik
       if (autoSyncInterval) clearInterval(autoSyncInterval);
       autoSyncInterval = setInterval(() => fetchFilesFromGitHub(pathSuffix), 5000);
     }
 
     async function fetchFilesFromGitHub(pathSuffix) {
-      const apiUrl = `https://api.github.com/repos/${envConfig.GITHUB_OWNER}/${envConfig.GITHUB_REPO}/contents${pathSuffix}`;
+      const folderPath = pathSuffix ? `/${pathSuffix}` : '';
+      const apiUrl = `https://api.github.com/repos/${envConfig.GITHUB_OWNER}/${envConfig.GITHUB_REPO}/contents${folderPath}`;
       
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
       if (envConfig.GITHUB_TOKEN) {
@@ -381,7 +448,17 @@
               try {
                 const htmlContent = await fetchRobustRawContent(item);
                 if (htmlContent) {
-                  saveReportToStorage(item.name, htmlContent);
+                  const ts = extractFileDateTime(item.name);
+                  storedFiles.set(item.name, {
+                    content: htmlContent,
+                    timestamp: ts,
+                    formattedTime: formatIndonesianDateTime(ts)
+                  });
+                  
+                  if (db) {
+                    const tx = db.transaction(STORE_NAME, "readwrite");
+                    tx.objectStore(STORE_NAME).put({ fileName: item.name, content: htmlContent, timestamp: ts });
+                  }
                   hasNewFilesAdded = true;
                 }
               } catch (fileErr) {
@@ -391,8 +468,9 @@
           }
         }
 
-        if (hasNewFilesAdded && !activeFileName && storedFiles.size > 0) {
-          openReportPreview(storedFiles.keys().next().value);
+        // Susun ulang tampilan menu jika terdeteksi penambahan arsip baru
+        if (hasNewFilesAdded) {
+          refreshSidebarMenu();
         }
 
         const cleanFolder = envConfig.GITHUB_FOLDER ? envConfig.GITHUB_FOLDER.replace(/^\/|\/$/g, '') : '';
@@ -401,7 +479,7 @@
         folderStatusIndicator.className = 'folder-status';
 
       } catch (err) {
-        // Bebas error UI saat jaringan terputus sesaat
+        // Melanjutkan eksekusi secara senyap jika peramban terputus dari jaringan
       }
     }
 
@@ -447,45 +525,84 @@
       event.target.value = '';
     }
 
-    /* ==========================================
-       SISTEM RENDER MENU & IFRAME PREVIEW
-       ========================================== */
+    /* =========================================================================
+       FUNGSI PENGURUTAN (SORTING) & RENDER ANTARMUKA DINAMIS
+       ========================================================================= */
+    // Mengonversi koleksi data penyimpanan menjadi deretan array yang terurut mutlak
+    function getSortedFilesList() {
+      const list = [];
+      storedFiles.forEach((fileObj, fileName) => {
+        list.push({ fileName, ...fileObj });
+      });
+      // Urutkan berdasarkan stempel waktu paling mutakhir (descending)
+      list.sort((a, b) => b.timestamp - a.timestamp);
+      return list;
+    }
+
     function refreshSidebarMenu() {
       menuList.innerHTML = '';
       fileCountLabel.textContent = storedFiles.size;
-      if (storedFiles.size === 0) {
+      
+      const sortedFiles = getSortedFilesList();
+
+      if (sortedFiles.length === 0) {
         menuList.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); font-style:italic; padding:4px 0;">Belum ada arsip.</div>`;
+        if (liveTimeBadge) liveTimeBadge.style.display = 'none';
         return;
       }
-      storedFiles.forEach((content, fileName) => {
-        const isCurrentlyActive = (fileName === activeFileName);
+
+      // Pembaruan Otomatis ke Atribut <head> dan Status Indikator Mutakhir
+      const mostRecentFile = sortedFiles[0];
+      injectDynamicMetaAndUI(mostRecentFile);
+
+      // Menetapkan file default yang otomatis ditampilkan di peramban utama
+      // Apabila belum ada berkas aktif yang dicatat di sesi sebelumnya, pilih file paling mutakhir
+      if (!activeFileName || !storedFiles.has(activeFileName)) {
+        activeFileName = mostRecentFile.fileName;
+        localStorage.setItem('evello_last_active', activeFileName);
+      }
+
+      // Merender deretan menu berdasarkan urutan kronologis yang sempurna
+      sortedFiles.forEach(item => {
+        const isCurrentlyActive = (item.fileName === activeFileName);
         const itemDiv = document.createElement('div');
         itemDiv.className = `file-item ${isCurrentlyActive ? 'active' : ''}`;
-        itemDiv.onclick = () => openReportPreview(fileName);
+        itemDiv.onclick = () => openReportPreview(item.fileName);
+        
         itemDiv.innerHTML = `
           <div class="file-info">
             <svg class="file-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <div class="file-name" title="${fileName}">${fileName}</div>
+            <div style="overflow:hidden;">
+              <div class="file-name" title="${item.fileName}">${item.fileName}</div>
+              <span class="file-time-hint">${item.formattedTime}</span>
+            </div>
           </div>
-          <button class="btn-delete" title="Hapus laporan dari database" onclick="deleteReport(event, '${fileName}')">
+          <button class="btn-delete" title="Hapus laporan dari database" onclick="deleteReport(event, '${item.fileName}')">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         `;
         menuList.appendChild(itemDiv);
       });
+
+      // Menjalankan pemuatan konten berkas yang aktif ke layar utama peramban
+      openReportPreview(activeFileName);
     }
 
     function openReportPreview(fileName) {
-      if (!storedFiles.has(fileName)) return;
+      const fileData = storedFiles.get(fileName);
+      if (!fileData) return;
+      
       activeFileName = fileName;
       localStorage.setItem('evello_last_active', fileName);
+      
       document.querySelectorAll('.file-item').forEach(el => {
         const nameText = el.querySelector('.file-name').textContent;
         el.classList.toggle('active', nameText === fileName);
       });
+
       emptyState.style.display = 'none';
       iframeViewer.style.display = 'block';
-      iframeViewer.srcdoc = storedFiles.get(fileName);
+      iframeViewer.srcdoc = fileData.content;
     }
   </script>
 </body>
