@@ -60,6 +60,11 @@
     
     .live-datetime-badge { font-size: 0.65rem; background-color: #eef2ff; color: var(--primary); padding: 4px 8px; border-radius: 6px; text-align: center; font-weight: 600; margin-top: 6px; border: 1px solid #e0e7ff; }
 
+    /* Status Pemuatan Env */
+    .env-alert { font-size: 0.7rem; padding: 6px 10px; margin: 0 16px 8px 16px; border-radius: 6px; display: none; text-align: center; font-weight: 500; }
+    .env-alert.error { background-color: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; display: block; }
+    .env-alert.success { background-color: #d1fae5; color: #10b981; border: 1px solid #6ee7b7; display: block; }
+
     /* Daftar Arsip / Menu Laporan */
     .file-list-container { flex: 1; overflow-y: auto; padding: 0 16px 16px 16px; }
     .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
@@ -329,7 +334,12 @@
           });
         });
         
-        // Pemicu penarikan dari GitHub API yang akan menuntaskan tampilan akhir
+        // HANYA perbarui menu jika database lokal sudah terisi
+        if (storedFiles.size > 0) {
+          refreshSidebarMenu();
+        }
+        
+        // Pemicu penarikan berkala dari GitHub API
         autoSyncGitHubRepository();
       };
     }
@@ -441,14 +451,14 @@
       try {
         const response = await fetch(apiUrl, { headers });
         if (!response.ok) {
-          // Tetap pastikan menu di-render apabila penarikan API gagal namun memori lokal terisi
-          refreshSidebarMenu();
+          // Tetap sembunyikan spinner jika penarikan API gagal namun memori lokal terisi
+          hideLoadingSpinner();
           return; 
         }
         
         const contents = await response.json();
         if (!Array.isArray(contents)) {
-          refreshSidebarMenu();
+          hideLoadingSpinner();
           return;
         }
 
@@ -483,8 +493,14 @@
           }
         }
 
-        // Jalankan pembaruan menu dan penutupan spinner setelah seluruh proses rampung
-        refreshSidebarMenu();
+        // PERBAIKAN PENTING: Merender ulang menu HANYA apabila terdeteksi ada file baru 
+        // atau jika menu di sidebar masih dalam keadaan kosong
+        if (hasNewFilesAdded || menuList.children.length === 0) {
+          refreshSidebarMenu();
+        } else {
+          // Pastikan spinner dihilangkan meski tidak ada file baru
+          hideLoadingSpinner();
+        }
 
         const cleanFolder = envConfig.GITHUB_FOLDER ? envConfig.GITHUB_FOLDER.replace(/^\/|\/$/g, '') : '';
         const displayPath = cleanFolder ? `${envConfig.GITHUB_REPO}/${cleanFolder}` : envConfig.GITHUB_REPO;
@@ -492,8 +508,7 @@
         folderStatusIndicator.className = 'folder-status';
 
       } catch (err) {
-        // Apabila terputus, tetap pastikan menu dirender menggunakan data cache IndexedDB lokal
-        refreshSidebarMenu();
+        hideLoadingSpinner();
       }
     }
 
@@ -519,6 +534,14 @@
       }
 
       throw new Error("Gagal mengambil respon kode mentah.");
+    }
+
+    // Utilitas penyembunyi spinner loading
+    function hideLoadingSpinner() {
+      if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => loadingOverlay.style.display = 'none', 300);
+      }
     }
 
     /* ==========================================
@@ -552,11 +575,7 @@
     }
 
     function refreshSidebarMenu() {
-      // Sembunyikan efek loading overlay karena data siap dieksekusi ke penampil
-      if (loadingOverlay) {
-        loadingOverlay.style.opacity = '0';
-        setTimeout(() => loadingOverlay.style.display = 'none', 300);
-      }
+      hideLoadingSpinner();
 
       menuList.innerHTML = '';
       fileCountLabel.textContent = storedFiles.size;
@@ -617,7 +636,12 @@
 
       emptyState.style.display = 'none';
       iframeViewer.style.display = 'block';
-      iframeViewer.srcdoc = fileData.content;
+
+      // PENCEGAHAN REFRESH UTAMA: Hanya perbarui isi iframe jika dokumen yang dipilih 
+      // berbeda dari yang sedang ditayangkan saat ini.
+      if (iframeViewer.srcdoc !== fileData.content) {
+        iframeViewer.srcdoc = fileData.content;
+      }
     }
   </script>
 </body>
